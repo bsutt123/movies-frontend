@@ -55,8 +55,22 @@ const MovieSearch = () => {
       });
   }
 
+  // clearChildren takes in a dom node and clears all the children of that node
+  function clearChildren(node) {
+    while (node.firstChild) {
+      node.removeChild(node.lastChild);
+    }
+  }
+
+  // appendChildren takes in a node and a list of nodes and appends all the children
+  // to the parent node
+  function appendChildren(node, list) {
+    list.forEach(function append(childNode) {
+      node.appendChild(childNode);
+    });
+  }
   //**************************PURE**************************//
-  //
+  //Pure functions that don't induce side effects
 
   //  debounce :: fn -> Number -> fn
   // debounces goal is to take a function, and only execute it if its called again
@@ -71,24 +85,8 @@ const MovieSearch = () => {
     };
   }
 
-  // clearChildren :: DOM node
-  // clearChildren takes in a dom node and clears all the children of that node
-  function clearChildren(node) {
-    while (node.firstChild) {
-      node.removeChild(node.lastChild);
-    }
-  }
-
-  function appendChildren(node, list) {
-    list.forEach(function append(childNode) {
-      node.appendChild(childNode);
-    });
-  }
-
-  /*
-* renderList :: [String] -> DOM
-* renderList takes in an array of strings and then attaches the string to a new list
-*/
+  // renderList :: [String] -> DOM
+  // renderList takes in an array of strings and then attaches the string to a new list
   function createChildNodes(array) {
     var results = array.map(function(name) {
       let newListItem = document.createElement("li");
