@@ -1,17 +1,29 @@
 const MovieSearch = () => {
   // get critical elements and store them in variables
+  const form = document.getElementById("search_form");
   const formInput = document.getElementById("q");
   const listOfResults = document.getElementById("results");
 
   // create a debounced search to use to listen to events
-  const debouncedSearch = debounce(500, searchForEntries);
+  const debouncedSearch = debounce(100, searchForEntries);
+
+  // state variable to know if we there are no more requests to get
+  let noMoreRequests = false;
 
   // listen for changes on the input field
   formInput.addEventListener("input", debouncedSearch);
 
+  // prevent default submit on form
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+  });
   // get more results when you get to the bottom of a page
   window.onscroll = function(ev) {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+    if (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight * 0.9
+    ) {
       getMoreEntries();
     }
   };
@@ -31,6 +43,7 @@ const MovieSearch = () => {
           return res.json();
         })
         .then(function({ data }) {
+          noMoreRequests = false;
           clearChildren(listOfResults);
           appendChildren(listOfResults, createChildNodes(data));
         })
@@ -43,16 +56,25 @@ const MovieSearch = () => {
   // getMoreEntries is fired upon reaching the bottom of the page with scrolling. It requests more
   // items to display and then appends then to the dom
   function getMoreEntries() {
-    fetch("http://localhost:3001/update")
-      .then(function(res) {
-        return res.json();
-      })
-      .then(function({ data }) {
-        appendChildren(listOfResults, createChildNodes(data));
-      })
-      .catch(function(e) {
-        console.error(e);
-      });
+    if (!noMoreRequests) {
+      var query = formInput.value;
+      var lastChild = listOfResults.lastChild.innerText;
+
+      fetch(`http://localhost:3001/update?query=${query}&latest=${lastChild}`)
+        .then(function(res) {
+          return res.json();
+        })
+        .then(function({ data }) {
+          if (data.length === 0) {
+            noMoreRequests = true;
+          } else {
+            appendChildren(listOfResults, createChildNodes(data));
+          }
+        })
+        .catch(function(e) {
+          console.error(e);
+        });
+    }
   }
 
   // clearChildren takes in a dom node and clears all the children of that node
